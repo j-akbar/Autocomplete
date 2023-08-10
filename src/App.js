@@ -5,6 +5,8 @@ import apiService from './apiService';
 import {
   Grid
 } from "@material-ui/core";
+import NumberFormat from 'react-number-format';
+
 
 const numberFormat = (value) =>
   new Intl.NumberFormat('en-ID', {
@@ -93,19 +95,22 @@ class App extends Component {
   handleHargaChange = (event) => {
     
     let harga = event.target.value;
-    let normalizeHarga = Number(harga.replace(/\d(?=(\d{3})+\.)/g,""));
-    let convHarga = 'Rp ' + normalizeHarga.toFixed(2); // numberFormat(harga);
+    let normalizeHarga = harga.replaceAll(",", "");
+    normalizeHarga = Number(normalizeHarga.replaceAll("Rp ",""))
+    console.log(normalizeHarga);
+    let convHarga = 'Rp ' + normalizeHarga.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'); // numberFormat(harga);
     this.setState({ 
-      harga: normalizeHarga
+      harga: normalizeHarga,
+      convHarga: convHarga
     });
     console.log(convHarga);
 
     let { diskon } = this.state;
-    let total = harga - (diskon * harga / 100);
+    let total = normalizeHarga - (diskon * normalizeHarga / 100);
     let convTotal = 'Rp ' + total.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
     event.persist();
     this.setState({ 
-      [event.target.name]: event.target.value,
+      // [event.target.name]: event.target.value,
       total: convTotal
      });
   };
@@ -127,7 +132,7 @@ class App extends Component {
  }
 
   render() {
-    let { negara, pelabuhan, barang, data_barang, diskon, harga, total } =
+    let { negara, pelabuhan, barang, data_barang, diskon, harga, convHarga, total } =
       this.state;
     // let convHarga = numberFormat(harga);
     return (
@@ -211,9 +216,16 @@ class App extends Component {
             <TextField
               id="harga"
               name="harga"
-              value={`${harga}`}
+              value={`${convHarga}`}
               onChange={this.handleHargaChange}
             />
+            {/* <NumberFormat
+              value={harga}
+              displayType={"text"}
+              thousandSeparator={true}
+              prefix={"$"}
+              renderText={(formattedValue) => <Text>{formattedValue}</Text>} // <--- Don't forget this!
+            /> */}
           </Grid>
 
           <Grid item xs={4} md={4}>
