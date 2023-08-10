@@ -2,6 +2,15 @@ import React, { Component, PropTypes } from 'react'
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import apiService from './apiService';
+import {
+  Grid
+} from "@material-ui/core";
+
+const numberFormat = (value) =>
+  new Intl.NumberFormat('en-ID', {
+    style: 'currency',
+    currency: 'IDR'
+  }).format(value);
 
 class App extends Component {
   state = {
@@ -11,6 +20,7 @@ class App extends Component {
     data_barang: null,
     diskon: 0,
     harga: 0,
+    convHarga: '',
     total: 0,
   };
 
@@ -81,12 +91,22 @@ class App extends Component {
   };
 
   handleHargaChange = (event) => {
-    let { diskon, harga } = this.state;
+    
+    let harga = event.target.value;
+    let normalizeHarga = Number(harga.replace(/\d(?=(\d{3})+\.)/g,""));
+    let convHarga = 'Rp ' + normalizeHarga.toFixed(2); // numberFormat(harga);
+    this.setState({ 
+      harga: normalizeHarga
+    });
+    console.log(convHarga);
+
+    let { diskon } = this.state;
     let total = harga - (diskon * harga / 100);
+    let convTotal = 'Rp ' + total.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
     event.persist();
     this.setState({ 
       [event.target.name]: event.target.value,
-      total: total
+      total: convTotal
      });
   };
 
@@ -107,73 +127,109 @@ class App extends Component {
  }
 
   render() {
-    let { negara, pelabuhan, barang, data_barang, diskon, harga, total } = this.state;
+    let { negara, pelabuhan, barang, data_barang, diskon, harga, total } =
+      this.state;
+    // let convHarga = numberFormat(harga);
     return (
       <div>
-        Negara :
-        <Autocomplete
-          id="negara"
-          options={negara}
-          getOptionLabel={(option) => `${option.negara}`}
-          sx={{ width: 300 }}
-          renderInput={(params) => <TextField {...params} label="Negara" />}
-          onChange={this.handlePelabuhanChange}
-        />
+        <Grid container spacing={2}>
+          <Grid item xs={4} md={4}>
+            Negara :
+          </Grid>
+          <Grid item xs={8} md={8}>
+            <Autocomplete
+              id="negara"
+              options={negara}
+              getOptionLabel={(option) => `${option.negara}`}
+              sx={{ width: 300 }}
+              renderInput={(params) => <TextField {...params} label="Negara" />}
+              onChange={this.handlePelabuhanChange}
+            />
+          </Grid>
+
+          <Grid item xs={4} md={4}>
+            Pelabuhan
+          </Grid>
+          <Grid item xs={8} md={8}>
+            <Autocomplete
+              id="pelabuhan"
+              options={pelabuhan}
+              getOptionLabel={(option) => `${option.name}`}
+              sx={{ width: 300 }}
+              renderInput={(params) => (
+                <TextField {...params} label="Pelabuhan" />
+              )}
+              onChange={this.handleBarangChange}
+            />
+          </Grid>
+
+          <Grid item xs={4} md={4}>
+            Barang
+          </Grid>
+          <Grid item xs={8} md={8}>
+            <Autocomplete
+              id="barang"
+              options={barang}
+              getOptionLabel={(option) =>
+                `${option.id} (${option.code}-${option.name})`
+              }
+              sx={{ width: 500 }}
+              renderInput={(params) => <TextField {...params} label="Barang" />}
+              onChange={this.handleDetailBarangChange}
+            />
+          </Grid>
+
+          <Grid item xs={4} md={4}></Grid>
+          <Grid item xs={8} md={8}>
+            <TextField
+              id="data_barang"
+              readonly
+              multiline
+              rows={4}
+              defaultValue={data_barang}
+              value={data_barang}
+            />
+          </Grid>
+
+          <Grid item xs={4} md={4}>
+            Diskon
+          </Grid>
+          <Grid item xs={8} md={8}>
+            <TextField
+              id="diskon"
+              name="diskon"
+              defaultValue={diskon}
+              value={`${diskon}%`}
+              onChange={this.handleChange}
+            />
+          </Grid>
+
+          <Grid item xs={4} md={4}>
+            Harga
+          </Grid>
+          <Grid item xs={8} md={8}>
+            <TextField
+              id="harga"
+              name="harga"
+              value={`${harga}`}
+              onChange={this.handleHargaChange}
+            />
+          </Grid>
+
+          <Grid item xs={4} md={4}>
+            Total
+          </Grid>
+          <Grid item xs={8} md={8}>
+            <TextField
+              id="total"
+              name="total"
+              defaultValue={total}
+              value={`${total}`}
+              onChange={this.handleChange}
+            />
+          </Grid>
+        </Grid>
         <br />
-        Pelabuhan :
-        <Autocomplete
-          id="pelabuhan"
-          options={pelabuhan}
-          getOptionLabel={(option) => `${option.name}`}
-          sx={{ width: 300 }}
-          renderInput={(params) => <TextField {...params} label="Pelabuhan" />}
-          onChange={this.handleBarangChange}
-        />
-        Barang :
-        <Autocomplete
-          id="barang"
-          options={barang}
-          getOptionLabel={(option) => `${option.id} (${option.code}-${option.name})`}
-          sx={{ width: 500 }}
-          renderInput={(params) => <TextField {...params} label="Barang" />}
-          onChange={this.handleDetailBarangChange}
-        />
-        <TextField
-          id="data_barang"
-          label="Multiline"
-          readonly
-          multiline
-          rows={4}
-          defaultValue={data_barang}
-          value={data_barang}
-        />
-        <br />
-        Diskon
-        <TextField
-          id="diskon"
-          name="diskon"
-          defaultValue={diskon}
-          value={`${diskon}%`}
-          onChange={this.handleChange}
-        />
-        <br />
-        Harga
-        <TextField
-          id="harga"
-          name="harga"
-          defaultValue={harga}
-          value={`${harga}`}
-          onChange={this.handleHargaChange}
-        />
-        <br />
-        Total
-        <TextField
-          id="total"
-          name="total"
-          defaultValue={total}
-          value={`${total}`}
-          onChange={this.handleChange}
-        />
       </div>
     );
   }
