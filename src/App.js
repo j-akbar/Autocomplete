@@ -107,7 +107,7 @@ class App extends Component {
 
     let { diskon } = this.state;
     let total = normalizeHarga - (diskon * normalizeHarga / 100);
-    let convTotal = 'Rp ' + total.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+    let convTotal = 'Rp ' + total.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
     event.persist();
     this.setState({ 
       // [event.target.name]: event.target.value,
@@ -203,6 +203,7 @@ class App extends Component {
             <TextField
               id="diskon"
               name="diskon"
+              
               defaultValue={diskon}
               value={`${diskon}%`}
               onChange={this.handleChange}
